@@ -1,0 +1,27 @@
+diff --git a/third_party/amd/include/TritonAMDGPUToLLVM/TargetUtils.h b/third_party/amd/include/TritonAMDGPUToLLVM/TargetUtils.h
+index 223eadb2e..f1c237e42 100644
+--- a/third_party/amd/include/TritonAMDGPUToLLVM/TargetUtils.h
++++ b/third_party/amd/include/TritonAMDGPUToLLVM/TargetUtils.h
+@@ -8,6 +8,7 @@ namespace mlir::triton::AMD {
+ // A list of ISA families we care about.
+ enum class ISAFamily {
+   Unknown,
++  GCN5,
+   CDNA1,
+   CDNA2,
+   CDNA3,
+diff --git a/third_party/amd/lib/TritonAMDGPUToLLVM/TargetUtils.cpp b/third_party/amd/lib/TritonAMDGPUToLLVM/TargetUtils.cpp
+index fb655694e..b7fdc6878 100644
+--- a/third_party/amd/lib/TritonAMDGPUToLLVM/TargetUtils.cpp
++++ b/third_party/amd/lib/TritonAMDGPUToLLVM/TargetUtils.cpp
+@@ -11,6 +11,10 @@ ISAFamily deduceISAFamily(llvm::StringRef arch) {
+ 
+   // CDNA ISA cases
+   switch (kind) {
++  case llvm::AMDGPU::GK_GFX900:
++  case llvm::AMDGPU::GK_GFX902:
++  case llvm::AMDGPU::GK_GFX906:
++    return ISAFamily::GCN5;
+   case llvm::AMDGPU::GK_GFX950:
+     return ISAFamily::CDNA4;
+   case llvm::AMDGPU::GK_GFX942:

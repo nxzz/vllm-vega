@@ -1,0 +1,37 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index cd1c2c90..a84a85ff 100755
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -34,7 +34,7 @@ set(PYTHON_SUPPORTED_VERSIONS "3.9" "3.10" "3.11" "3.12")
+ set(CUDA_SUPPORTED_ARCHS "7.0;7.2;7.5;8.0;8.6;8.7;8.9;9.0")
+ 
+ # Supported AMD GPU architectures.
+-set(HIP_SUPPORTED_ARCHS "gfx906;gfx908;gfx90a;gfx942;gfx1030;gfx1100;gfx1101")
++set(HIP_SUPPORTED_ARCHS "gfx900;gfx902;gfx906;gfx908;gfx90a;gfx942;gfx1030;gfx1100;gfx1101")
+ 
+ #
+ # Supported/expected torch versions for CUDA/ROCm.
+diff --git a/vllm/attention/backends/rocm_flash_attn.py b/vllm/attention/backends/rocm_flash_attn.py
+index f49b3784..00f2d95f 100644
+--- a/vllm/attention/backends/rocm_flash_attn.py
++++ b/vllm/attention/backends/rocm_flash_attn.py
+@@ -26,7 +26,9 @@ _PARTITION_SIZE_ROCM = 512
+ _GPU_ARCH = torch.cuda.get_device_properties("cuda").gcnArchName
+ _ON_NAVI = "gfx1" in _GPU_ARCH
+ _ON_MI250_MI300 = any(arch in _GPU_ARCH for arch in ["gfx90a", "gfx942"])
+-
++gcn_matches = ["gfx900", "gfx902", "gfx906"]
++_ON_GCN5 = any(gcn_matches in _GPU_ARCH for gcn_matches in _GPU_ARCH)
++print("_ON_GCN5: " + str(_ON_GCN5))
+ 
+ class ROCmFlashAttentionBackend(AttentionBackend):
+ 
+@@ -883,7 +885,7 @@ def _use_rocm_custom_paged_attention(qtype: torch.dtype, head_size: int,
+                                      block_size: int, gqa_ratio: int,
+                                      max_seq_len: int) -> bool:
+     # rocm custom page attention not support on navi (gfx1*)
+-    return (_ON_MI250_MI300 and not _ON_NAVI
++    return (_ON_MI250_MI300 and not _ON_NAVI and not _ON_GCN5
+             and (qtype == torch.half or qtype == torch.bfloat16)
+             and (head_size == 64 or head_size == 128)
+             and (block_size == 16 or block_size == 32)
