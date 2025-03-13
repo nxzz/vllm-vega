@@ -21,23 +21,23 @@ RUN cd /opt &&\
     patch -p1 < /opt/triton.patch && \
     cd python && pip3 install -e .
 
-ADD ./patch/vllm_0.7.3.patch /opt
+ADD ./patch/vllm_f53a0586b9c88a78167157296555b7664c398055.patch /opt
 
 RUN cd /opt &&\
     . ./vllmenv/bin/activate &&\
     git clone https://github.com/vllm-project/vllm.git && cd vllm &&\
-    git checkout refs/tags/v0.7.3 &&\
-    patch -p1 < /opt/vllm_0.7.3.patch && \
-    pip3 install "aiohttp==3.11.13" && \
+    git checkout f53a0586b9c88a78167157296555b7664c398055 &&\
+    patch -p1 < /opt/vllm_f53a0586b9c88a78167157296555b7664c398055.patch && \
+    pip3 install "aiohttp==3.11.13" "jinja2==3.1.6" && \
     pip3 uninstall "httpx>=1" && \
     pip3 install "httpx<1" && \
     python3 setup.py develop
 
 RUN cd /opt &&\
     . ./vllmenv/bin/activate &&\
-    pip3 uninstall -y "numpy>=2"
+    pip3 uninstall -y "numpy>=2" &&\
+    pip3 install git+https://github.com/huggingface/transformers
 
 ENV PYTHONPATH=/opt/triton/python:$PYTHONPATH
 ENV VIRTUAL_ENV /opt/vllmenv
 ENV PATH /opt/vllmenv/bin:$PATH
-
